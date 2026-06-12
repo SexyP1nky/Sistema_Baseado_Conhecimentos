@@ -6,7 +6,48 @@ Entrada: material, percentual de contaminação e umidade. O motor encadeia trê
 
 ---
 
-## Domínio
+## Controlador Fuzzy Mamdani
+
+Este projeto também inclui um controlador fuzzy tipo Mamdani implementado com `scikit-fuzzy` para determinar a **urgência de tratamento** de resíduos.
+
+### Domínio do Controlador Fuzzy
+
+O sistema fuzzy avalia dois fatores críticos na triagem de resíduos:
+
+1. **Contaminação (%)**: nível de sujeira/impurezas no material
+2. **Umidade (%)**: teor de água presente no resíduo
+
+A saída é a **Urgência de Tratamento**, que indica quão rapidamente o resíduo deve ser processado para evitar degradação ou contaminação cruzada.
+
+### Variáveis e Termos Linguísticos
+
+Cada variável possui 3 termos linguísticos com funções de pertinência triangulares:
+
+| Variável | Termos | Justificativa |
+|----------|--------|---------------|
+| Contaminação | baixa, media, alta | Materiais pouco contaminados podem aguardar; altamente contaminados exigem ação imediata |
+| Umidade | seca, umida, molhada | Alta umidade acelera degradação (especialmente em papel/orgânicos) |
+| Urgência | baixa, media, alta | Define prioridade na fila de tratamento |
+
+### Base de Regras (9 regras)
+
+O sistema cobre todo o espaço de combinações de entrada sem lacunas:
+
+| Regra | Contaminação | Umidade | Urgência |
+|-------|--------------|---------|----------|
+| R1 | baixa | seca | baixa |
+| R2 | baixa | umida | baixa |
+| R3 | baixa | molhada | media |
+| R4 | media | seca | baixa |
+| R5 | media | umida | media |
+| R6 | media | molhada | alta |
+| R7 | alta | seca | media |
+| R8 | alta | umida | alta |
+| R9 | alta | molhada | alta |
+
+---
+
+## Sistema Baseado em Regras (Experta)
 
 A triagem de resíduos tem alguns conflitos não óbvios. Papel reciclável com muita umidade não vale mais do que lixo comum porque as fibras se degradam e contaminam o lote inteiro. Um material tecnicamente reciclável com contaminação acima de 60% vai pro aterro. Resíduos perigosos — pilha, bateria, medicamento — têm tratamento completamente separado, não importa o restante das condições.
 
@@ -109,7 +150,35 @@ material=pilha | contaminacao=0% | umidade=0%
 
 ## Como rodar
 
-Abrir `triagem_reciclagem.ipynb` no Google Colab e executar as células em ordem. A primeira célula instala as dependências.
+### Controlador Fuzzy Mamdani
+
+1. **Instalar dependências:**
+   ```bash
+   pip install scikit-fuzzy numpy
+   ```
+
+2. **Executar o controlador:**
+   ```bash
+   python controlador_fuzzy.py
+   ```
+
+3. **Usar como módulo Python:**
+   ```python
+   from controlador_fuzzy import criar_sistema_fuzzy, simular_controlador
+   
+   # Criar sistema
+   sistema = criar_sistema_fuzzy()
+   
+   # Simular com valores específicos
+   resultado = simular_controlador(contaminacao_valor=75, umidade_valor=80)
+   print(f"Urgência: {resultado['urgencia_valor']:.2f}%")
+   ```
+
+### Sistema Baseado em Regras (Experta)
+
+Abrir `Untitled.ipynb` no Google Colab ou Jupyter Notebook e executar as células em ordem. A primeira célula instala as dependências.
+
+---
 
 ## Equipe
 
